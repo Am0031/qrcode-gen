@@ -111,7 +111,7 @@
       let lastCanvas = null;
 
       function generateQRCode() {
-        const text = document.getElementById("text").value;
+        const text = document.getElementById("text").value.trim();
         if (!text) {
           alert("Please enter some text or a URL first!");
           return; // stop here if input is empty
