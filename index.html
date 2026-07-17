@@ -114,6 +114,7 @@
   </head>
   <body>
     <h1>QR Code Generator</h1>
+    <h3 style="text-align: left">Link details</h3>
     <div class="input-field">
       <input id="text" type="text" placeholder="Enter URL or text" />
     </div>
@@ -171,11 +172,14 @@
       </button>
     </div>
     <br />
-    <div class="button-group">
+    <h3 style="text-align: left">QR Code Generation</h3>
+    <div>
       <div>Now generate the QR code to match the above URL:</div>
       <button class="button-generate" onclick="generateQRCode()">
         <i class="fa-solid fa-qrcode"></i> Generate
       </button>
+    </div>
+    <div class="button-group">
       <button
         class="button-base"
         id="downloadButton"
