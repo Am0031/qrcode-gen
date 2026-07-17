@@ -89,6 +89,16 @@
     <div class="input-field">
       <input id="text" type="text" placeholder="Enter URL or text" />
     </div>
+    <div class="input-field" style="text-align: left">
+      <label>
+        <input
+          id="utmSource"
+          type="checkbox"
+          style="width: auto; margin-right: 8px"
+        />
+        Add source tag (utm_source=qrcode) for traffic tracking
+      </label>
+    </div>
     <br />
     <div class="button-group">
       <button class="button-generate" onclick="generateQRCode()">
@@ -110,11 +120,27 @@
     <script>
       let lastCanvas = null;
 
+      function addUtmSource(url) {
+        try {
+          const parsed = new URL(url);
+          parsed.searchParams.set("utm_source", "qrcode");
+          return parsed.toString();
+        } catch (e) {
+          // Not a valid absolute URL — fall back to plain query-string handling
+          const separator = url.includes("?") ? "&" : "?";
+          return `${url}${separator}utm_source=qrcode`;
+        }
+      }
+
       function generateQRCode() {
-        const text = document.getElementById("text").value.trim();
+        let text = document.getElementById("text").value.trim();
         if (!text) {
           alert("Please enter some text or a URL first!");
           return; // stop here if input is empty
+        }
+
+        if (document.getElementById("utmSource").checked) {
+          text = addUtmSource(text);
         }
 
         const container = document.getElementById("qrcode");
@@ -152,6 +178,7 @@
       }
       function clearAll() {
         document.getElementById("text").value = "";
+        document.getElementById("utmSource").checked = false;
         document.getElementById("qrcode").innerHTML = "";
         lastCanvas = null;
       }
