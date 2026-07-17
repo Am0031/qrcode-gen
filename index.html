@@ -30,9 +30,23 @@
         font-size: 16px;
         margin: 10px 0;
         box-sizing: border-box;
+        height: 48px;
       }
       .input-field {
         width: 100%;
+      }
+      .input-narrow {
+        width: 300px;
+        max-width: 100%;
+        margin: 0 auto;
+      }
+      select {
+        width: 100%;
+        padding: 12px;
+        font-size: 16px;
+        margin: 10px 0;
+        box-sizing: border-box;
+        height: 48px;
       }
       .button-group {
         display: flex;
@@ -100,7 +114,7 @@
       </label>
     </div>
     <div id="utmSourceOptions" style="display: none">
-      <div class="input-field">
+      <div class="input-field input-narrow">
         <select id="utmSourceSelect">
           <option value="qrcode">QR code (classic)</option>
           <option value="newsletter">Newsletter (Brevo)</option>
@@ -109,7 +123,7 @@
         </select>
       </div>
       <div
-        class="input-field"
+        class="input-field input-narrow"
         id="utmSourceCustomWrapper"
         style="display: none"
       >
@@ -120,8 +134,20 @@
         />
       </div>
     </div>
-    <div class="input-field" id="finalUrlPreview" style="text-align: left; color: #555; display: none;">
+    <div
+      class="input-field"
+      id="finalUrlPreview"
+      style="text-align: left; color: #555; display: none; margin-top: 25px;"
+    >
       The generated QR code will match this URL: <strong id="finalUrlText"></strong>
+      <br />
+      <button
+        class="button-base"
+        onclick="copyFinalUrl()"
+        style="margin-top: 8px"
+      >
+        <i class="fa-solid fa-link"></i> Copy URL
+      </button>
     </div>
     <br />
     <div class="button-group">
@@ -133,9 +159,6 @@
       </button>
       <button class="button-base" onclick="copyQRCodeImage()">
         <i class="fa-solid fa-copy"></i> Copy to Clipboard
-      </button>
-      <button class="button-base" onclick="copyFinalUrl()">
-        <i class="fa-solid fa-link"></i> Copy URL
       </button>
       <button class="button-clear" onclick="clearAll()">
         <i class="fa-solid fa-trash"></i> Clear
