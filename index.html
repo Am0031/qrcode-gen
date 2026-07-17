@@ -96,8 +96,29 @@
           type="checkbox"
           style="width: auto; margin-right: 8px"
         />
-        Add source tag (utm_source=qrcode) for traffic tracking
+        Add source tag (utm_source=...) for traffic tracking
       </label>
+    </div>
+    <div id="utmSourceOptions" style="display: none">
+      <div class="input-field">
+        <select id="utmSourceSelect">
+          <option value="qrcode">QR code (classic)</option>
+          <option value="newsletter">Newsletter (Brevo)</option>
+          <option value="facebook">Facebook</option>
+          <option value="custom">Custom...</option>
+        </select>
+      </div>
+      <div
+        class="input-field"
+        id="utmSourceCustomWrapper"
+        style="display: none"
+      >
+        <input
+          id="utmSourceCustom"
+          type="text"
+          placeholder="Enter custom source name"
+        />
+      </div>
     </div>
     <div class="input-field" id="finalUrlPreview" style="text-align: left; color: #555; display: none;">
       The generated QR code will match this URL: <strong id="finalUrlText"></strong>
@@ -113,6 +134,9 @@
       <button class="button-base" onclick="copyQRCodeImage()">
         <i class="fa-solid fa-copy"></i> Copy to Clipboard
       </button>
+      <button class="button-base" onclick="copyFinalUrl()">
+        <i class="fa-solid fa-link"></i> Copy URL
+      </button>
       <button class="button-clear" onclick="clearAll()">
         <i class="fa-solid fa-trash"></i> Clear
       </button>
@@ -123,15 +147,28 @@
     <script>
       let lastCanvas = null;
 
-      function addUtmSource(url) {
+      function sanitizeSourceName(name) {
+        return name.trim().replace(/\s+/g, "_");
+      }
+
+      function getSelectedSource() {
+        const select = document.getElementById("utmSourceSelect");
+        if (select.value !== "custom") return select.value;
+        const custom = sanitizeSourceName(
+          document.getElementById("utmSourceCustom").value
+        );
+        return custom || "qrcode"; // fall back if custom field is left empty
+      }
+
+      function addUtmSource(url, source) {
         try {
           const parsed = new URL(url);
-          parsed.searchParams.set("utm_source", "qrcode");
+          parsed.searchParams.set("utm_source", source);
           return parsed.toString();
         } catch (e) {
           // Not a valid absolute URL — fall back to plain query-string handling
           const separator = url.includes("?") ? "&" : "?";
-          return `${url}${separator}utm_source=qrcode`;
+          return `${url}${separator}utm_source=${encodeURIComponent(source)}`;
         }
       }
 
@@ -139,7 +176,7 @@
         const raw = document.getElementById("text").value.trim();
         if (!raw) return "";
         return document.getElementById("utmSource").checked
-          ? addUtmSource(raw)
+          ? addUtmSource(raw, getSelectedSource())
           : raw;
       }
 
@@ -150,12 +187,39 @@
         preview.style.display = finalUrl ? "block" : "none";
       }
 
+      function updateUtmSourceOptionsVisibility() {
+        const checked = document.getElementById("utmSource").checked;
+        document.getElementById("utmSourceOptions").style.display = checked
+          ? "block"
+          : "none";
+        updateUtmSourceCustomVisibility();
+      }
+
+      function updateUtmSourceCustomVisibility() {
+        const isCustom =
+          document.getElementById("utmSourceSelect").value === "custom";
+        document.getElementById("utmSourceCustomWrapper").style.display =
+          document.getElementById("utmSource").checked && isCustom
+            ? "block"
+            : "none";
+      }
+
       document
         .getElementById("text")
         .addEventListener("input", updateFinalUrlPreview);
+      document.getElementById("utmSource").addEventListener("change", () => {
+        updateUtmSourceOptionsVisibility();
+        updateFinalUrlPreview();
+      });
       document
-        .getElementById("utmSource")
-        .addEventListener("change", updateFinalUrlPreview);
+        .getElementById("utmSourceSelect")
+        .addEventListener("change", () => {
+          updateUtmSourceCustomVisibility();
+          updateFinalUrlPreview();
+        });
+      document
+        .getElementById("utmSourceCustom")
+        .addEventListener("input", updateFinalUrlPreview);
 
       function generateQRCode() {
         const text = getFinalUrl();
@@ -199,10 +263,25 @@
           );
         }
       }
+      async function copyFinalUrl() {
+        const finalUrl = getFinalUrl();
+        if (!finalUrl) return alert("Please enter some text or a URL first!");
+        try {
+          await navigator.clipboard.writeText(finalUrl);
+          alert("URL copied to clipboard!");
+        } catch (err) {
+          console.error(err);
+          alert("Copy failed — your browser may not support clipboard access.");
+        }
+      }
+
       function clearAll() {
         document.getElementById("text").value = "";
         document.getElementById("utmSource").checked = false;
+        document.getElementById("utmSourceSelect").value = "qrcode";
+        document.getElementById("utmSourceCustom").value = "";
         document.getElementById("qrcode").innerHTML = "";
+        updateUtmSourceOptionsVisibility();
         updateFinalUrlPreview();
         lastCanvas = null;
       }
