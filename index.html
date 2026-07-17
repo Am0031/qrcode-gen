@@ -24,13 +24,23 @@
         font-size: 32px;
         margin-bottom: 20px;
       }
-      input {
+      input[type="text"] {
         width: 100%; /* full width on mobile */
         padding: 12px;
         font-size: 16px;
         margin: 10px 0;
         box-sizing: border-box;
         height: 48px;
+      }
+      input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        margin: 0 8px 0 0;
+        vertical-align: middle;
+      }
+      label {
+        display: inline-flex;
+        align-items: center;
       }
       .input-field {
         width: 100%;
@@ -105,11 +115,7 @@
     </div>
     <div class="input-field" style="text-align: left">
       <label>
-        <input
-          id="utmSource"
-          type="checkbox"
-          style="width: auto; margin-right: 8px"
-        />
+        <input id="utmSource" type="checkbox" />
         Add source tag (utm_source=...) for traffic tracking
       </label>
     </div>
