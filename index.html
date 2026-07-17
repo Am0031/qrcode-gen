@@ -90,6 +90,13 @@
       .button-clear:hover {
         background-color: #8d0000;
       }
+      button:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+      }
+      button:disabled:hover {
+        background-color: #ccc;
+      }
       #qrcode {
         margin-top: 20px;
       }
@@ -152,7 +159,7 @@
       id="finalUrlPreview"
       style="text-align: left; color: #555; display: none; margin-top: 25px"
     >
-      The generated QR code will match this URL:
+      <div>The full url is:</div>
       <strong id="finalUrlText"></strong>
       <br />
       <button
@@ -165,13 +172,24 @@
     </div>
     <br />
     <div class="button-group">
+      <div>Now generate the QR code to match the above URL:</div>
       <button class="button-generate" onclick="generateQRCode()">
         <i class="fa-solid fa-qrcode"></i> Generate
       </button>
-      <button class="button-base" onclick="downloadQRCode()">
+      <button
+        class="button-base"
+        id="downloadButton"
+        onclick="downloadQRCode()"
+        disabled
+      >
         <i class="fa-solid fa-download"></i> Download PNG
       </button>
-      <button class="button-base" onclick="copyQRCodeImage()">
+      <button
+        class="button-base"
+        id="copyImageButton"
+        onclick="copyQRCodeImage()"
+        disabled
+      >
         <i class="fa-solid fa-copy"></i> Copy to Clipboard
       </button>
       <button class="button-clear" onclick="clearAll()">
@@ -280,6 +298,8 @@
           if (err) console.error(err);
           container.appendChild(canvas);
           lastCanvas = canvas;
+          document.getElementById('downloadButton').disabled = false;
+          document.getElementById('copyImageButton').disabled = false;
         });
       }
 
@@ -327,6 +347,8 @@
         ).checked = true;
         document.getElementById('utmSourceCustom').value = '';
         document.getElementById('qrcode').innerHTML = '';
+        document.getElementById('downloadButton').disabled = true;
+        document.getElementById('copyImageButton').disabled = true;
         updateUtmSourceOptionsVisibility();
         updateFinalUrlPreview();
         lastCanvas = null;
