@@ -99,6 +99,9 @@
         Add source tag (utm_source=qrcode) for traffic tracking
       </label>
     </div>
+    <div class="input-field" id="finalUrlPreview" style="text-align: left; color: #555; display: none;">
+      The generated QR code will match this URL: <strong id="finalUrlText"></strong>
+    </div>
     <br />
     <div class="button-group">
       <button class="button-generate" onclick="generateQRCode()">
@@ -132,16 +135,36 @@
         }
       }
 
+      function getFinalUrl() {
+        const raw = document.getElementById("text").value.trim();
+        if (!raw) return "";
+        return document.getElementById("utmSource").checked
+          ? addUtmSource(raw)
+          : raw;
+      }
+
+      function updateFinalUrlPreview() {
+        const finalUrl = getFinalUrl();
+        const preview = document.getElementById("finalUrlPreview");
+        document.getElementById("finalUrlText").textContent = finalUrl;
+        preview.style.display = finalUrl ? "block" : "none";
+      }
+
+      document
+        .getElementById("text")
+        .addEventListener("input", updateFinalUrlPreview);
+      document
+        .getElementById("utmSource")
+        .addEventListener("change", updateFinalUrlPreview);
+
       function generateQRCode() {
-        let text = document.getElementById("text").value.trim();
+        const text = getFinalUrl();
         if (!text) {
           alert("Please enter some text or a URL first!");
           return; // stop here if input is empty
         }
 
-        if (document.getElementById("utmSource").checked) {
-          text = addUtmSource(text);
-        }
+        updateFinalUrlPreview();
 
         const container = document.getElementById("qrcode");
         container.innerHTML = ""; // clear previous QR
@@ -180,6 +203,7 @@
         document.getElementById("text").value = "";
         document.getElementById("utmSource").checked = false;
         document.getElementById("qrcode").innerHTML = "";
+        updateFinalUrlPreview();
         lastCanvas = null;
       }
     </script>
