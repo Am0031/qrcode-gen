@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -24,7 +24,7 @@
         font-size: 32px;
         margin-bottom: 20px;
       }
-      input[type="text"] {
+      input[type='text'] {
         width: 100%; /* full width on mobile */
         padding: 12px;
         font-size: 16px;
@@ -32,7 +32,8 @@
         box-sizing: border-box;
         height: 48px;
       }
-      input[type="checkbox"] {
+      input[type='checkbox'],
+      input[type='radio'] {
         width: 16px;
         height: 16px;
         margin: 0 8px 0 0;
@@ -42,6 +43,10 @@
         display: inline-flex;
         align-items: center;
       }
+      .radio-option {
+        display: flex;
+        margin: 8px 0;
+      }
       .input-field {
         width: 100%;
       }
@@ -49,14 +54,6 @@
         width: 300px;
         max-width: 100%;
         margin: 10px 0;
-      }
-      select {
-        width: 100%;
-        padding: 12px;
-        font-size: 16px;
-        margin: 10px 0;
-        box-sizing: border-box;
-        height: 48px;
       }
       .button-group {
         display: flex;
@@ -119,14 +116,29 @@
         Add source tag (utm_source=...) for traffic tracking
       </label>
     </div>
-    <div id="utmSourceOptions" style="display: none">
+    <div id="utmSourceOptions" style="display: none; text-align: left">
       <div class="input-field input-narrow">
-        <select id="utmSourceSelect">
-          <option value="qrcode">QR code (classic)</option>
-          <option value="newsletter">Newsletter (Brevo)</option>
-          <option value="facebook">Facebook</option>
-          <option value="custom">Custom...</option>
-        </select>
+        <label class="radio-option">
+          <input
+            type="radio"
+            name="utmSourceRadio"
+            value="qrcode"
+            checked
+          />
+          QR code (generic)
+        </label>
+        <label class="radio-option">
+          <input type="radio" name="utmSourceRadio" value="newsletter" />
+          Newsletter (Brevo)
+        </label>
+        <label class="radio-option">
+          <input type="radio" name="utmSourceRadio" value="facebook" />
+          Facebook
+        </label>
+        <label class="radio-option">
+          <input type="radio" name="utmSourceRadio" value="custom" />
+          Custom...
+        </label>
       </div>
       <div
         class="input-field input-narrow"
@@ -143,9 +155,10 @@
     <div
       class="input-field"
       id="finalUrlPreview"
-      style="text-align: left; color: #555; display: none; margin-top: 25px;"
+      style="text-align: left; color: #555; display: none; margin-top: 25px"
     >
-      The generated QR code will match this URL: <strong id="finalUrlText"></strong>
+      The generated QR code will match this URL:
+      <strong id="finalUrlText"></strong>
       <br />
       <button
         class="button-base"
@@ -177,90 +190,97 @@
       let lastCanvas = null;
 
       function sanitizeSourceName(name) {
-        return name.trim().replace(/\s+/g, "_");
+        return name.trim().replace(/\s+/g, '_');
       }
 
       function getSelectedSource() {
-        const select = document.getElementById("utmSourceSelect");
-        if (select.value !== "custom") return select.value;
-        const custom = sanitizeSourceName(
-          document.getElementById("utmSourceCustom").value
+        const selected = document.querySelector(
+          'input[name="utmSourceRadio"]:checked',
         );
-        return custom || "qrcode"; // fall back if custom field is left empty
+        const value = selected ? selected.value : 'qrcode';
+        if (value !== 'custom') return value;
+        const custom = sanitizeSourceName(
+          document.getElementById('utmSourceCustom').value,
+        );
+        return custom || 'qrcode'; // fall back if custom field is left empty
       }
 
       function addUtmSource(url, source) {
         try {
           const parsed = new URL(url);
-          parsed.searchParams.set("utm_source", source);
+          parsed.searchParams.set('utm_source', source);
           return parsed.toString();
         } catch (e) {
           // Not a valid absolute URL — fall back to plain query-string handling
-          const separator = url.includes("?") ? "&" : "?";
+          const separator = url.includes('?') ? '&' : '?';
           return `${url}${separator}utm_source=${encodeURIComponent(source)}`;
         }
       }
 
       function getFinalUrl() {
-        const raw = document.getElementById("text").value.trim();
-        if (!raw) return "";
-        return document.getElementById("utmSource").checked
+        const raw = document.getElementById('text').value.trim();
+        if (!raw) return '';
+        return document.getElementById('utmSource').checked
           ? addUtmSource(raw, getSelectedSource())
           : raw;
       }
 
       function updateFinalUrlPreview() {
         const finalUrl = getFinalUrl();
-        const preview = document.getElementById("finalUrlPreview");
-        document.getElementById("finalUrlText").textContent = finalUrl;
-        preview.style.display = finalUrl ? "block" : "none";
+        const preview = document.getElementById('finalUrlPreview');
+        document.getElementById('finalUrlText').textContent = finalUrl;
+        preview.style.display = finalUrl ? 'block' : 'none';
       }
 
       function updateUtmSourceOptionsVisibility() {
-        const checked = document.getElementById("utmSource").checked;
-        document.getElementById("utmSourceOptions").style.display = checked
-          ? "block"
-          : "none";
+        const checked = document.getElementById('utmSource').checked;
+        document.getElementById('utmSourceOptions').style.display = checked
+          ? 'block'
+          : 'none';
         updateUtmSourceCustomVisibility();
       }
 
       function updateUtmSourceCustomVisibility() {
-        const isCustom =
-          document.getElementById("utmSourceSelect").value === "custom";
-        document.getElementById("utmSourceCustomWrapper").style.display =
-          document.getElementById("utmSource").checked && isCustom
-            ? "block"
-            : "none";
+        const selected = document.querySelector(
+          'input[name="utmSourceRadio"]:checked',
+        );
+        const isCustom = selected && selected.value === 'custom';
+        document.getElementById('utmSourceCustomWrapper').style.display =
+          document.getElementById('utmSource').checked && isCustom
+            ? 'block'
+            : 'none';
       }
 
       document
-        .getElementById("text")
-        .addEventListener("input", updateFinalUrlPreview);
-      document.getElementById("utmSource").addEventListener("change", () => {
+        .getElementById('text')
+        .addEventListener('input', updateFinalUrlPreview);
+      document.getElementById('utmSource').addEventListener('change', () => {
         updateUtmSourceOptionsVisibility();
         updateFinalUrlPreview();
       });
       document
-        .getElementById("utmSourceSelect")
-        .addEventListener("change", () => {
-          updateUtmSourceCustomVisibility();
-          updateFinalUrlPreview();
-        });
+        .querySelectorAll('input[name="utmSourceRadio"]')
+        .forEach((radio) =>
+          radio.addEventListener('change', () => {
+            updateUtmSourceCustomVisibility();
+            updateFinalUrlPreview();
+          }),
+        );
       document
-        .getElementById("utmSourceCustom")
-        .addEventListener("input", updateFinalUrlPreview);
+        .getElementById('utmSourceCustom')
+        .addEventListener('input', updateFinalUrlPreview);
 
       function generateQRCode() {
         const text = getFinalUrl();
         if (!text) {
-          alert("Please enter some text or a URL first!");
+          alert('Please enter some text or a URL first!');
           return; // stop here if input is empty
         }
 
         updateFinalUrlPreview();
 
-        const container = document.getElementById("qrcode");
-        container.innerHTML = ""; // clear previous QR
+        const container = document.getElementById('qrcode');
+        container.innerHTML = ''; // clear previous QR
         QRCode.toCanvas(text, { width: 256 }, function (err, canvas) {
           if (err) console.error(err);
           container.appendChild(canvas);
@@ -269,47 +289,49 @@
       }
 
       function downloadQRCode() {
-        if (!lastCanvas) return alert("Generate a QR code first!");
-        const link = document.createElement("a");
-        link.download = "qrcode.png";
+        if (!lastCanvas) return alert('Generate a QR code first!');
+        const link = document.createElement('a');
+        link.download = 'qrcode.png';
         link.href = lastCanvas.toDataURL();
         link.click();
       }
 
       async function copyQRCodeImage() {
-        if (!lastCanvas) return alert("Generate a QR code first!");
+        if (!lastCanvas) return alert('Generate a QR code first!');
         try {
           const blob = await new Promise((resolve) =>
-            lastCanvas.toBlob(resolve)
+            lastCanvas.toBlob(resolve),
           );
-          const item = new ClipboardItem({ "image/png": blob });
+          const item = new ClipboardItem({ 'image/png': blob });
           await navigator.clipboard.write([item]);
-          alert("QR code image copied to clipboard!");
+          alert('QR code image copied to clipboard!');
         } catch (err) {
           console.error(err);
           alert(
-            "Copy failed — your browser may not support image clipboard yet."
+            'Copy failed — your browser may not support image clipboard yet.',
           );
         }
       }
       async function copyFinalUrl() {
         const finalUrl = getFinalUrl();
-        if (!finalUrl) return alert("Please enter some text or a URL first!");
+        if (!finalUrl) return alert('Please enter some text or a URL first!');
         try {
           await navigator.clipboard.writeText(finalUrl);
-          alert("URL copied to clipboard!");
+          alert('URL copied to clipboard!');
         } catch (err) {
           console.error(err);
-          alert("Copy failed — your browser may not support clipboard access.");
+          alert('Copy failed — your browser may not support clipboard access.');
         }
       }
 
       function clearAll() {
-        document.getElementById("text").value = "";
-        document.getElementById("utmSource").checked = false;
-        document.getElementById("utmSourceSelect").value = "qrcode";
-        document.getElementById("utmSourceCustom").value = "";
-        document.getElementById("qrcode").innerHTML = "";
+        document.getElementById('text').value = '';
+        document.getElementById('utmSource').checked = false;
+        document.querySelector(
+          'input[name="utmSourceRadio"][value="qrcode"]',
+        ).checked = true;
+        document.getElementById('utmSourceCustom').value = '';
+        document.getElementById('qrcode').innerHTML = '';
         updateUtmSourceOptionsVisibility();
         updateFinalUrlPreview();
         lastCanvas = null;
