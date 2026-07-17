@@ -76,6 +76,7 @@
         background-color: #0078d7;
       }
       .button-generate {
+        margin: 10px 0;
         background-color: green;
       }
       .button-clear {
@@ -99,6 +100,25 @@
       }
       #qrcode {
         margin-top: 20px;
+      }
+      #toast {
+        position: fixed;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #333;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 4px;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+      }
+      #toast.show {
+        opacity: 1;
+      }
+      #toast.error {
+        background: #b30101;
       }
 
       /* Mobile-specific tweaks */
@@ -173,7 +193,7 @@
     </div>
     <br />
     <h3 style="text-align: left">QR Code Generation</h3>
-    <div>
+    <div style="text-align: left">
       <div>Now generate the QR code to match the above URL:</div>
       <button class="button-generate" onclick="generateQRCode()">
         <i class="fa-solid fa-qrcode"></i> Generate
@@ -203,8 +223,20 @@
 
     <div id="qrcode"></div>
 
+    <div id="toast"></div>
+
     <script>
       let lastCanvas = null;
+      let toastTimeout = null;
+
+      function showToast(message, isError = false) {
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.classList.toggle('error', isError);
+        toast.classList.add('show');
+        clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => toast.classList.remove('show'), 2500);
+      }
 
       function sanitizeSourceName(name) {
         return name.trim().replace(/\s+/g, '_');
@@ -323,11 +355,12 @@
           );
           const item = new ClipboardItem({ 'image/png': blob });
           await navigator.clipboard.write([item]);
-          alert('QR code image copied to clipboard!');
+          showToast('QR code image copied to clipboard!');
         } catch (err) {
           console.error(err);
-          alert(
+          showToast(
             'Copy failed — your browser may not support image clipboard yet.',
+            true,
           );
         }
       }
@@ -336,10 +369,13 @@
         if (!finalUrl) return alert('Please enter some text or a URL first!');
         try {
           await navigator.clipboard.writeText(finalUrl);
-          alert('URL copied to clipboard!');
+          showToast('URL copied to clipboard!');
         } catch (err) {
           console.error(err);
-          alert('Copy failed — your browser may not support clipboard access.');
+          showToast(
+            'Copy failed — your browser may not support clipboard access.',
+            true,
+          );
         }
       }
 
